@@ -45,3 +45,4 @@ __pycache__/
 # Misc
 dist/
 coverage/
+.github/copilot-instructions.md
