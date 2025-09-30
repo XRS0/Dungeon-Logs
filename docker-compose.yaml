@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: terraform-logs-rabbitmq
+    hostname: rabbitmq
+    ports:
+      - "5672:5672" # RabbitMQ основной порт
+      - "15672:15672" # RabbitMQ Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - rabbitmq_log:/var/log/rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RMQ_ADMIN_USER}
+      RABBITMQ_DEFAULT_PASS: ${RMQ_ADMIN_PASS}
+    restart: unless-stopped
+    networks:
+      - terraform-logs-network
+
+volumes:
+  rabbitmq_data:
+  rabbitmq_log:
+
+
+networks:
+  terraform-logs-network:
+    driver: bridge
