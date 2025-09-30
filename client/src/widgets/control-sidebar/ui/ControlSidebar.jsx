@@ -1,0 +1,81 @@
+import { Activity, LifeBuoy, Logs, Settings, ShieldCheck } from "lucide-react";
+
+const navigationItems = [
+  { icon: Activity, label: "Обзор", description: "Сводка событий", active: true },
+  { icon: Logs, label: "Логи", description: "История обращений", active: false },
+  { icon: ShieldCheck, label: "Безопасность", description: "Мониторинг угроз", active: false },
+  { icon: Settings, label: "Сценарии", description: "Реакции и макросы", active: false },
+  { icon: LifeBuoy, label: "Помощь", description: "Каналы поддержки", active: false }
+];
+
+export const ControlSidebar = () => {
+  return (
+    <aside className="hidden min-h-screen w-[320px] flex-col justify-between border-r border-surfaceMuted/40 bg-surface/80 px-6 py-8 shadow-inset backdrop-blur lg:flex">
+      <div className="space-y-10">
+        <header className="space-y-4">
+          <p className="rounded-full border border-accent/40 px-3 py-1 text-sm font-medium uppercase tracking-wide text-accent/90">
+            Support Ops
+          </p>
+          <div>
+            <h1 className="text-3xl font-semibold leading-tight">Daysi Command</h1>
+            <p className="mt-2 max-w-[220px] text-sm text-white/60">
+              Единая панель контроля для техподдержки и аналитики инцидентов.
+            </p>
+          </div>
+        </header>
+
+        <nav className="space-y-3">
+          {navigationItems.map(({ icon: Icon, label, description, active }) => (
+            <button
+              key={label}
+              className={`group w-full rounded-2xl border px-4 py-4 text-left transition-all duration-200 ${
+                active
+                  ? "border-accent/70 bg-interactive/80 shadow-glow"
+                  : "border-transparent bg-surface/60 hover:border-interactive/50 hover:bg-surfaceMuted/60"
+              }`}
+            >
+              <div className="flex items-start gap-4">
+                <span
+                  className={`flex h-12 w-12 items-center justify-center rounded-xl border ${
+                    active ? "border-accent/60 bg-accent/15" : "border-surfaceMuted/60 bg-surface/80"
+                  }`}
+                >
+                  <Icon
+                    className={`h-6 w-6 ${active ? "text-accent" : "text-white/50 group-hover:text-accent"}`}
+                  />
+                </span>
+                <span className="space-y-1">
+                  <span className="flex items-center gap-2 text-lg font-semibold">
+                    {label}
+                    {active && (
+                      <span className="h-2 w-2 rounded-full bg-accent shadow-glow" aria-hidden="true" />
+                    )}
+                  </span>
+                  <span className="text-sm text-white/50">{description}</span>
+                </span>
+              </div>
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      <footer className="rounded-2xl border border-interactive/40 bg-surface/60 p-4">
+        <p className="text-sm font-medium uppercase tracking-wide text-white/60">Активная смена</p>
+        <div className="mt-3 space-y-2">
+          <p className="text-lg font-semibold">Команда №7 – "Патч"</p>
+          <div className="flex items-center justify-between text-sm text-white/40">
+            <span>Оператор</span>
+            <span className="font-medium text-white">Иван К.</span>
+          </div>
+          <div className="flex items-center justify-between text-sm text-white/40">
+            <span>Аналитик</span>
+            <span className="font-medium text-white">Анна Р.</span>
+          </div>
+        </div>
+        <div className="mt-4 rounded-xl border border-accent/50 bg-accent/10 px-3 py-2 text-sm text-accent">
+          До завершения смены: 47 мин
+        </div>
+      </footer>
+    </aside>
+  );
+};
