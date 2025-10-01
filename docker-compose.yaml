@@ -27,9 +27,15 @@ services:
       - rabbitmq
     environment:
       RMQ_URL: ${LIS_RMQ_URL}
-      RMQ_QUEUE: ${LIS_RMQ_QUEUE}
-      RMQ_CONSUMER: ${LIS_RMQ_CONSUMER}
-      RMQ_PREFETCH: ${LIS_RMQ_PREFETCH}
+      RMQ_SUMMARY_QUEUE: ${LIS_RMQ_SUMMARY_QUEUE}
+      HTTP_ADDRESS: ${LIS_HTTP_ADDRESS}
+      HTTP_MAX_UPLOAD_BYTES: ${LIS_HTTP_MAX_UPLOAD_BYTES}
+      DB_HOST: ${LIS_DB_HOST}
+      DB_PORT: ${LIS_DB_PORT}
+      DB_USER: ${LIS_DB_USER}
+      DB_PASSWORD: ${LIS_DB_PASSWORD}
+      DB_NAME: ${LIS_DB_NAME}
+      DB_SSLMODE: ${LIS_DB_SSLMODE}
     restart: unless-stopped
     networks:
       - terraform-logs-network

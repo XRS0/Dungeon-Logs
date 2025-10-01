@@ -2,9 +2,8 @@ package main
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,20 +11,17 @@ import (
 
 	"log_ingestion_service/config"
 	adapter "log_ingestion_service/internal/adapters/rabbitmq"
-	"log_ingestion_service/internal/entities"
+	pg "log_ingestion_service/internal/infrastructure/persistance/postgres"
 	infr "log_ingestion_service/internal/infrastructure/rabbitmq"
+	iface "log_ingestion_service/internal/interfaces/http"
+	"log_ingestion_service/internal/usecases"
 )
-
-const defaultPrefetch = 5
 
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
 	cfg := config.InitConfig()
-	if cfg.RMQ.Prefetch <= 0 {
-		cfg.RMQ.Prefetch = defaultPrefetch
-	}
 
 	client, err := adapter.NewClient(cfg.RMQ)
 	if err != nil {
@@ -37,35 +33,53 @@ func main() {
 		}
 	}()
 
-	queueName := cfg.RMQ.Queue
-	if queueName == "" {
-		log.Fatal("queue name must be provided via config")
+	dbClient, err := pg.NewClient(ctx, cfg.DB)
+	if err != nil {
+		log.Fatalf("failed to init postgres client: %v", err)
 	}
+	defer dbClient.Close()
 
+	queueName := cfg.RMQ.SummaryQueue
 	queue, err := client.DeclareQueue(queueName, true)
 	if err != nil {
 		log.Fatalf("declare queue %s failed: %v", queueName, err)
 	}
-	log.Printf("listening on queue %s with prefetch=%d", queue.Name, cfg.RMQ.Prefetch)
+	log.Printf("summary queue ready: %s", queue.Name)
 
-	consumer, err := infr.NewLogConsumer(client, queue.Name, cfg.RMQ.Consumer)
+	publisher, err := infr.NewSummaryPublisher(client, queue.Name)
 	if err != nil {
-		log.Fatalf("create log consumer: %v", err)
+		log.Fatalf("create summary publisher: %v", err)
 	}
 
-	handler := func(ctx context.Context, terraformLog entities.TerraformLog) error {
-		timestamp := terraformLog.Timestamp
-		if timestamp.IsZero() {
-			timestamp = time.Now().UTC()
+	builder := usecases.NewTerraformSummaryBuilder()
+	repo := pg.NewLogRepository(dbClient.Pool())
+	usecase := usecases.NewTerraformLogProcessingUseCase(repo, builder)
+	handler := iface.NewHandler(usecase, publisher, cfg.HTTP.MaxUploadBytes)
+	mux := http.NewServeMux()
+	handler.RegisterRoutes(mux)
+
+	server := &http.Server{
+		Addr:              cfg.HTTP.Address,
+		Handler:           http.TimeoutHandler(mux, 30*time.Second, "request timed out"),
+		ReadHeaderTimeout: 10 * time.Second,
+	}
+
+	serverErrors := make(chan error, 1)
+	go func() {
+		log.Printf("http server listening on %s", cfg.HTTP.Address)
+		serverErrors <- server.ListenAndServe()
+	}()
+
+	select {
+	case <-ctx.Done():
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+		defer cancel()
+		if err := server.Shutdown(shutdownCtx); err != nil {
+			log.Printf("http server shutdown error: %v", err)
 		}
-
-		fmt.Printf("[%s] level=%s message=%s\n", timestamp.Format(time.RFC3339Nano), terraformLog.Level, terraformLog.Message)
-		return nil
+	case err := <-serverErrors:
+		if err != nil && err != http.ErrServerClosed {
+			log.Fatalf("http server error: %v", err)
+		}
 	}
-
-	if err := consumer.ConsumeTerraformLogs(ctx, handler); err != nil && !errors.Is(err, context.Canceled) {
-		log.Fatalf("log consumer stopped with error: %v", err)
-	}
-
-	log.Println("log consumer stopped")
 }

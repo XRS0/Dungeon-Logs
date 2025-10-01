@@ -26,10 +26,6 @@ func NewClient(cfg config.Config_RMQ) (*Client, error) {
 		return nil, errors.New("rabbitmq: empty connection URL")
 	}
 
-	if cfg.Prefetch <= 0 {
-		cfg.Prefetch = 1
-	}
-
 	conn, err := amqp.Dial(cfg.URL)
 	if err != nil {
 		return nil, fmt.Errorf("rabbitmq: dial failed: %w", err)
@@ -39,12 +35,6 @@ func NewClient(cfg config.Config_RMQ) (*Client, error) {
 	if err != nil {
 		_ = conn.Close()
 		return nil, fmt.Errorf("rabbitmq: create channel failed: %w", err)
-	}
-
-	if err := channel.Qos(cfg.Prefetch, 0, false); err != nil {
-		_ = channel.Close()
-		_ = conn.Close()
-		return nil, fmt.Errorf("rabbitmq: set qos failed: %w", err)
 	}
 
 	return &Client{
@@ -79,46 +69,25 @@ func (c *Client) DeclareQueue(name string, durable bool) (amqp.Queue, error) {
 	return queue, nil
 }
 
-// Consume subscribes to the provided queue and returns a delivery channel. The subscription
-// is automatically cancelled when the provided context is cancelled.
-func (c *Client) Consume(ctx context.Context, queueName, consumerTag string) (<-chan amqp.Delivery, error) {
+// Publish sends a message payload to the specified queue using the default exchange.
+func (c *Client) Publish(ctx context.Context, queueName string, body []byte) error {
 	c.mu.RLock()
 	channel := c.channel
 	c.mu.RUnlock()
 
 	if channel == nil {
-		return nil, errors.New("rabbitmq: channel is not initialized")
+		return errors.New("rabbitmq: channel is not initialized")
 	}
 
-	deliveries, err := channel.Consume(
-		queueName,
-		consumerTag,
-		false, // autoAck
-		false, // exclusive
-		false, // noLocal - RabbitMQ server does not support this flag but library requires it
-		false, // noWait
-		nil,   // args
-	)
-	if err != nil {
-		return nil, fmt.Errorf("rabbitmq: consume from %s failed: %w", queueName, err)
+	if queueName == "" {
+		return errors.New("rabbitmq: queue name is required")
 	}
 
-	go func() {
-		<-ctx.Done()
-		_ = channel.Cancel(consumerTag, false)
-	}()
-
-	return deliveries, nil
-}
-
-// Ack acknowledges a message as successfully processed.
-func (c *Client) Ack(delivery amqp.Delivery) error {
-	return delivery.Ack(false)
-}
-
-// Nack negatively acknowledges a message and optionally requeues it.
-func (c *Client) Nack(delivery amqp.Delivery, requeue bool) error {
-	return delivery.Nack(false, requeue)
+	return channel.PublishWithContext(ctx, "", queueName, false, false, amqp.Publishing{
+		ContentType:  "application/json",
+		DeliveryMode: amqp.Persistent,
+		Body:         body,
+	})
 }
 
 // Close shuts down the channel and connection.
