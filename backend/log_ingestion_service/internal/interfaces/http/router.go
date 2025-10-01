@@ -37,7 +37,23 @@ func NewHandler(usecase LogProcessingUseCase, publisher SummaryPublisher, maxUpl
 }
 
 func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("/api/v1/logs/upload", h.handleUpload)
+	mux.HandleFunc("/api/v1/logs/upload", h.withCORS(h.handleUpload))
+}
+
+func (h *Handler) withCORS(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		w.Header().Set("Access-Control-Allow-Max-Age", "3600")
+
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		next(w, r)
+	}
 }
 
 func (h *Handler) handleUpload(w http.ResponseWriter, r *http.Request) {
