@@ -1,64 +1,70 @@
-import { Activity, AlertTriangle, Compass, Rocket, Settings } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { Activity, AlertTriangle, Compass, Import, Logs, Settings } from "lucide-react";
+import toast from "react-hot-toast";
 import { NavLink } from "react-router-dom";
+import { axiosInstance } from "../../../entities/axios/instance";
 
 const navigationItems = [
   { icon: Activity, label: "Обзор", description: "Сводка событий", to: "/dashboard" },
-  { icon: Rocket, label: "Запуски", description: "Plan/apply сеансы", to: "/launches" },
+  { icon: Logs, label: "Все логи", description: "Plan/apply сеансы", to: "/logs" },
   { icon: Compass, label: "Исследователь", description: "Гант / Логи", to: "/explorer" },
   { icon: AlertTriangle, label: "Инциденты", description: "Ошибки и алерты", to: "/incidents" },
   { icon: Settings, label: "Настройки", description: "Сведения", to: "/settings" }
 ];
 
 export const ControlSidebar = () => {
+  const handleUploadLogs = (e) => {
+    const file = e.target.files[0];
+    console.log(file);
+    if (!file.type.includes("json")) {
+      toast.error("Please select a correct logs file");
+      return;
+    }
+
+    mutate(file);
+  }
+
+  const { mutate } = useMutation({
+    mutationKey: ["upload"],
+    mutationFn: file => axiosInstance.post(`/logs/upload`, file),
+    onSuccess: () => {
+      toast.success("Logs has been uploaded successfully")
+    }
+  });
+
   return (
-    <aside className="hidden sticky top-0 h-screen w-[320px] flex-col justify-between border-r border-surfaceMuted/40 bg-surface/80 px-6 py-8 shadow-inset backdrop-blur lg:flex">
+    <aside className="hidden sticky top-0 h-screen w-[320px] flex-col justify-between bg-base-100 px-6 py-8 shadow-inset backdrop-blur lg:flex">
       <div className="space-y-10">
-        <header className="space-y-4">
-          <p className="rounded-full border border-accent/40 px-3 py-1 text-sm font-medium uppercase tracking-wide text-accent/90">
-            Support Ops
-          </p>
-          <div>
-            <h1 className="text-3xl font-semibold leading-tight">Daysi Command</h1>
-            <p className="mt-2 max-w-[220px] text-sm text-white/60">
-              Единая панель контроля для техподдержки и аналитики инцидентов.
-            </p>
-          </div>
-        </header>
+        <img src="/logo.svg" alt="logo" />
 
         <nav className="space-y-3">
-          {navigationItems.map(({ icon: Icon, label, description, to }) => (
+          {navigationItems.map(({ icon: Icon, label, to }) => (
             <NavLink
               key={label}
               to={to}
               className={({ isActive }) =>
-                `group block rounded-2xl border px-4 py-4 transition-all duration-200 ${
+                `group block rounded-[20px] p-2 transition-all duration-200 ${
                   isActive
-                    ? "border-accent/70 bg-interactive/80 shadow-glow"
-                    : "border-transparent bg-surface/60 hover:border-interactive/50 hover:bg-surfaceMuted/60"
+                    ? "bg-secondary shadow-glow"
+                    : "bg-primary hover:bg-secondary/50"
                 }`
               }
             >
               {({ isActive }) => (
-                <div className="flex items-start gap-4">
+                <div className="flex items-center gap-4">
                   <span
-                    className={`flex h-12 w-12 items-center justify-center rounded-xl border ${
-                      isActive ? "border-accent/60 bg-accent/15" : "border-surfaceMuted/60 bg-surface/80"
+                    className={`flex size-10 items-center justify-center rounded-xl ${
+                      isActive ? "bg-primary" : "bg-secondary"
                     }`}
                   >
                     <Icon
-                      className={`h-6 w-6 ${
-                        isActive ? "text-accent" : "text-white/50 group-hover:text-accent"
-                      }`}
+                      className="size-5 text-base-content"
                     />
                   </span>
                   <span className="space-y-1">
-                    <span className="flex items-center gap-2 text-lg font-semibold">
+                    <span className="flex items-center font-size-[15px] gap-2 text-lg font-semibold">
                       {label}
-                      {isActive && (
-                        <span className="h-2 w-2 rounded-full bg-accent shadow-glow" aria-hidden="true" />
-                      )}
                     </span>
-                    <span className="text-sm text-white/50">{description}</span>
                   </span>
                 </div>
               )}
@@ -67,10 +73,35 @@ export const ControlSidebar = () => {
         </nav>
       </div>
 
-      <footer className="rounded-2xl border border-interactive/40 bg-surface/60 p-4">
-        <div className="rounded-xl border border-accent/50 bg-accent/10 px-3 py-2 text-sm text-accent">
-          Тут обязательно будет какая-то полезная информация 
-        </div>
+      <footer>
+        <label htmlFor="upload-logs">
+          <div 
+            className="cursor-pointer bg-primary hover:bg-secondary/50 rounded-[20px] p-2 transition-all duration-200"
+          >
+            <div className="flex items-center gap-4">
+              <span
+                className="flex size-10 items-center justify-center rounded-xl bg-secondary"
+              >
+                <Import
+                  className="size-5 text-base-content"
+                />
+              </span>
+              <span className="space-y-1">
+                <span className="flex items-center font-size-[15px] gap-2 text-lg font-semibold">
+                  Upload logs
+                </span>
+              </span>
+            </div>
+          </div>
+          
+          <input
+              type="file"
+              id="upload-logs"
+              accept="application/json"
+              className="hidden"
+              onChange={handleUploadLogs}
+            />
+        </label>
       </footer>
     </aside>
   );
