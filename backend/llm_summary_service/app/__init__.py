@@ -1,0 +1,1 @@
+"""Log summary microservice package."""
