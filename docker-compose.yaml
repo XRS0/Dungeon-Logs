@@ -18,6 +18,24 @@ services:
     networks:
       - terraform-logs-network
 
+  log-ingestion-service:
+    build:
+      context: ./backend/log_ingestion_service
+      dockerfile: Dockerfile
+    container_name: log-ingestion-service
+    depends_on:
+      - rabbitmq
+    env_file:
+      - ./backend/log_ingestion_service/.env
+    environment:
+      RMQ_URL: ${LIS-RMQ_URL:-amqp://admin:password@rabbitmq:5672/}
+      RMQ_QUEUE: ${LIS-RMQ_QUEUE:-log_ingestion}
+      RMQ_CONSUMER: ${LIS-RMQ_CONSUMER:-log_ingestion_service}
+      RMQ_PREFETCH: ${LIS-RMQ_PREFETCH:-5}
+    restart: unless-stopped
+    networks:
+      - terraform-logs-network
+
 volumes:
   rabbitmq_data:
   rabbitmq_log:
