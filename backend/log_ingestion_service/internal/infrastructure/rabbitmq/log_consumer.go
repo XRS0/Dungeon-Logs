@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
+	"time"
 
 	adapter "log_ingestion_service/internal/adapters/rabbitmq"
 	"log_ingestion_service/internal/entities"
@@ -78,14 +80,77 @@ func (c *LogConsumer) ConsumeTerraformLogs(ctx context.Context, handler LogHandl
 }
 
 func decodeTerraformLog(payload []byte) (entities.TerraformLog, error) {
-	var logEntity entities.TerraformLog
-	if err := json.Unmarshal(payload, &logEntity); err != nil {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(payload, &raw); err != nil {
 		return entities.TerraformLog{}, fmt.Errorf("decode terraform log: %w", err)
 	}
 
-	if len(logEntity.Raw) == 0 {
-		logEntity.Raw = append(logEntity.Raw, payload...)
+	logEntity := entities.TerraformLog{
+		Raw:      append([]byte(nil), payload...),
+		Metadata: make(map[string]string),
+	}
+
+	setStringField := func(target *string, keys ...string) {
+		for _, key := range keys {
+			if value, ok := raw[key]; ok {
+				if str, ok := value.(string); ok {
+					*target = str
+					return
+				}
+			}
+		}
+	}
+
+	setStringField(&logEntity.Level, "@level", "level")
+	setStringField(&logEntity.Message, "@message", "message")
+	setStringField(&logEntity.RunID, "run_id", "runId", "@run_id")
+	setStringField(&logEntity.Workspace, "workspace", "@workspace")
+	setStringField(&logEntity.Stage, "stage", "@stage")
+	setStringField(&logEntity.Component, "component", "@component")
+
+	if tsStr, ok := raw["@timestamp"].(string); ok {
+		if ts, err := parseTimestamp(tsStr); err == nil {
+			logEntity.Timestamp = ts
+		}
+	} else if tsStr, ok := raw["timestamp"].(string); ok {
+		if ts, err := parseTimestamp(tsStr); err == nil {
+			logEntity.Timestamp = ts
+		}
+	}
+
+	collectMetadata := func(key string, value interface{}) {
+		switch strings.ToLower(key) {
+		case "@level", "level", "@message", "message", "@timestamp", "timestamp", "run_id", "runid", "@run_id", "workspace", "@workspace", "stage", "@stage", "component", "@component":
+			return
+		}
+		if str, ok := value.(string); ok {
+			logEntity.Metadata[key] = str
+		}
+	}
+
+	for key, value := range raw {
+		collectMetadata(key, value)
+	}
+
+	if len(logEntity.Metadata) == 0 {
+		logEntity.Metadata = nil
 	}
 
 	return logEntity, nil
+}
+
+func parseTimestamp(value string) (time.Time, error) {
+	layouts := []string{
+		time.RFC3339Nano,
+		time.RFC3339,
+		"2006-01-02T15:04:05.000000-07:00",
+	}
+
+	for _, layout := range layouts {
+		if ts, err := time.Parse(layout, value); err == nil {
+			return ts, nil
+		}
+	}
+
+	return time.Time{}, fmt.Errorf("unsupported timestamp format: %s", value)
 }
