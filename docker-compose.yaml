@@ -23,6 +23,8 @@ services:
       context: ./backend/log_ingestion_service
       dockerfile: Dockerfile
     container_name: log-ingestion-service
+    ports:
+      - "${LIS_HTTP_PORT}:${LIS_HTTP_PORT}"
     depends_on:
       - rabbitmq
     environment:
