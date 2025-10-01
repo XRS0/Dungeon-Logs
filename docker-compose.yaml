@@ -34,6 +34,25 @@ services:
     networks:
       - terraform-logs-network
 
+  log-generator-service:
+    build:
+      context: ./backend/log_generator_service
+      dockerfile: Dockerfile
+    container_name: log-generator-service
+    depends_on:
+      - rabbitmq
+    environment:
+      SPRING_RABBITMQ_HOST: ${SPRING_RABBITMQ_HOST:-rabbitmq}
+      SPRING_RABBITMQ_PORT: ${SPRING_RABBITMQ_PORT:-5672}
+      SPRING_RABBITMQ_USERNAME: ${SPRING_RABBITMQ_USERNAME:-guest}
+      SPRING_RABBITMQ_PASSWORD: ${SPRING_RABBITMQ_PASSWORD:-guest}
+      LOGS_PER_SECOND: ${LOGS_PER_SECOND:-5}
+      JSON_FILE: ${JSON_FILE:-logs/tflog.json}
+      LOG_QUEUE_NAME: ${LOG_QUEUE_NAME:-terraform_logs}
+    restart: unless-stopped
+    networks:
+      - terraform-logs-network
+
 volumes:
   rabbitmq_data:
   rabbitmq_log:
