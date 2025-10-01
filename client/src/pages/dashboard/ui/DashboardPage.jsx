@@ -15,12 +15,10 @@ export const DashboardPage = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,_2fr)_minmax(0,_1fr)]">
+      <div className="flex flex-col gap-8">
         <LogViewer />
-        <div className="flex flex-col gap-8">
-          <SystemStatus />
-          <SystemSummary />
-        </div>
+        <SystemStatus />
+        <SystemSummary />
       </div>
     </div>
   );

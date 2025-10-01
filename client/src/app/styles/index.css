@@ -4,16 +4,35 @@
 
 :root {
   color-scheme: dark;
+  --color-canvas: 11 13 16;
+  --color-surface: 18 19 21;
+  --color-surface-muted: 25 26 28;
+  --color-interactive: 42 47 54;
+  --color-accent: 23 179 88;
+  --color-text-primary: 244 248 246;
+  --color-text-secondary: 164 172 183;
+}
+
+[data-theme="daylight"] {
+  color-scheme: light;
+  --color-canvas: 245 247 249;
+  --color-surface: 232 238 243;
+  --color-surface-muted: 215 224 232;
+  --color-interactive: 204 214 224;
+  --color-accent: 20 109 60;
+  --color-text-primary: 17 24 39;
+  --color-text-secondary: 71 85 105;
 }
 
 body {
   font-family: "Inter", "Segoe UI", system-ui, sans-serif;
-  background-color: theme("colors.canvas");
+  background-color: rgb(var(--color-canvas));
+  color: rgb(var(--color-text-primary));
 }
 
 ::selection {
-  background: rgba(23, 179, 88, 0.35);
-  color: white;
+  background: rgb(var(--color-accent) / 0.35);
+  color: rgb(var(--color-text-primary));
 }
 
 .dashed-border {

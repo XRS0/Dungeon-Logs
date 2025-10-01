@@ -1,16 +1,17 @@
-import { Activity, LifeBuoy, Logs, Settings, ShieldCheck } from "lucide-react";
+import { Activity, AlertTriangle, Compass, Rocket, Settings } from "lucide-react";
+import { NavLink } from "react-router-dom";
 
 const navigationItems = [
-  { icon: Activity, label: "Обзор", description: "Сводка событий", active: true },
-  { icon: Logs, label: "Логи", description: "История обращений", active: false },
-  { icon: ShieldCheck, label: "Безопасность", description: "Мониторинг угроз", active: false },
-  { icon: Settings, label: "Сценарии", description: "Реакции и макросы", active: false },
-  { icon: LifeBuoy, label: "Помощь", description: "Каналы поддержки", active: false }
+  { icon: Activity, label: "Обзор", description: "Сводка событий", to: "/dashboard" },
+  { icon: Rocket, label: "Запуски", description: "Plan/apply сеансы", to: "/launches" },
+  { icon: Compass, label: "Исследователь", description: "Гант / Логи", to: "/explorer" },
+  { icon: AlertTriangle, label: "Инциденты", description: "Ошибки и алерты", to: "/incidents" },
+  { icon: Settings, label: "Настройки", description: "Тема и сведения", to: "/settings" }
 ];
 
 export const ControlSidebar = () => {
   return (
-    <aside className="hidden min-h-screen w-[320px] flex-col justify-between border-r border-surfaceMuted/40 bg-surface/80 px-6 py-8 shadow-inset backdrop-blur lg:flex">
+    <aside className="hidden sticky top-0 h-screen w-[320px] flex-col justify-between border-r border-surfaceMuted/40 bg-surface/80 px-6 py-8 shadow-inset backdrop-blur lg:flex">
       <div className="space-y-10">
         <header className="space-y-4">
           <p className="rounded-full border border-accent/40 px-3 py-1 text-sm font-medium uppercase tracking-wide text-accent/90">
@@ -25,36 +26,43 @@ export const ControlSidebar = () => {
         </header>
 
         <nav className="space-y-3">
-          {navigationItems.map(({ icon: Icon, label, description, active }) => (
-            <button
+          {navigationItems.map(({ icon: Icon, label, description, to }) => (
+            <NavLink
               key={label}
-              className={`group w-full rounded-2xl border px-4 py-4 text-left transition-all duration-200 ${
-                active
-                  ? "border-accent/70 bg-interactive/80 shadow-glow"
-                  : "border-transparent bg-surface/60 hover:border-interactive/50 hover:bg-surfaceMuted/60"
-              }`}
+              to={to}
+              className={({ isActive }) =>
+                `group block rounded-2xl border px-4 py-4 transition-all duration-200 ${
+                  isActive
+                    ? "border-accent/70 bg-interactive/80 shadow-glow"
+                    : "border-transparent bg-surface/60 hover:border-interactive/50 hover:bg-surfaceMuted/60"
+                }`
+              }
             >
-              <div className="flex items-start gap-4">
-                <span
-                  className={`flex h-12 w-12 items-center justify-center rounded-xl border ${
-                    active ? "border-accent/60 bg-accent/15" : "border-surfaceMuted/60 bg-surface/80"
-                  }`}
-                >
-                  <Icon
-                    className={`h-6 w-6 ${active ? "text-accent" : "text-white/50 group-hover:text-accent"}`}
-                  />
-                </span>
-                <span className="space-y-1">
-                  <span className="flex items-center gap-2 text-lg font-semibold">
-                    {label}
-                    {active && (
-                      <span className="h-2 w-2 rounded-full bg-accent shadow-glow" aria-hidden="true" />
-                    )}
+              {({ isActive }) => (
+                <div className="flex items-start gap-4">
+                  <span
+                    className={`flex h-12 w-12 items-center justify-center rounded-xl border ${
+                      isActive ? "border-accent/60 bg-accent/15" : "border-surfaceMuted/60 bg-surface/80"
+                    }`}
+                  >
+                    <Icon
+                      className={`h-6 w-6 ${
+                        isActive ? "text-accent" : "text-white/50 group-hover:text-accent"
+                      }`}
+                    />
                   </span>
-                  <span className="text-sm text-white/50">{description}</span>
-                </span>
-              </div>
-            </button>
+                  <span className="space-y-1">
+                    <span className="flex items-center gap-2 text-lg font-semibold">
+                      {label}
+                      {isActive && (
+                        <span className="h-2 w-2 rounded-full bg-accent shadow-glow" aria-hidden="true" />
+                      )}
+                    </span>
+                    <span className="text-sm text-white/50">{description}</span>
+                  </span>
+                </div>
+              )}
+            </NavLink>
           ))}
         </nav>
       </div>

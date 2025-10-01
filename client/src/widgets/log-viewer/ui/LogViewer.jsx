@@ -34,9 +34,9 @@ export const LogViewer = () => {
           Обновить
         </button>
       }
-      className="min-h-[520px]"
+  className="min-h-[220px]"
     >
-      <div className="space-y-4">
+  <div className="space-y-4 overflow-auto pr-2 max-h-[420px]">
         {isLoading && (
           <div className="h-24 animate-pulse rounded-2xl border border-interactive/40 bg-surface/50" />
         )}
@@ -73,6 +73,7 @@ export const LogViewer = () => {
             Новых логов пока нет — вы на гребне волны 🌊
           </div>
         )}
+        <hr className="my-2 border-t border-surfaceMuted/40" />
       </div>
     </SectionCard>
   );

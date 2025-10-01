@@ -1,1 +1,2 @@
-export { QueryProvider as AppProviders } from "./QueryProvider";
+export { QueryProvider } from "./QueryProvider";
+export { ThemeProvider } from "./ThemeProvider";

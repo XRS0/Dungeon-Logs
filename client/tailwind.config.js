@@ -1,15 +1,24 @@
 import daisyui from "daisyui";
 
+const withOpacity = (variable) => ({ opacityValue }) => {
+  if (opacityValue === undefined) {
+    return `rgb(var(${variable}) / 1)`;
+  }
+  return `rgb(var(${variable}) / ${opacityValue})`;
+};
+
 const config = {
   content: ["./index.html", "./src/**/*.{js,jsx}"],
   theme: {
     extend: {
       colors: {
-        canvas: "#0B0D10",
-        surface: "#121315",
-        surfaceMuted: "#191A1C",
-        interactive: "#2A2F36",
-        accent: "#17B358"
+        canvas: withOpacity("--color-canvas"),
+        surface: withOpacity("--color-surface"),
+        surfaceMuted: withOpacity("--color-surface-muted"),
+        interactive: withOpacity("--color-interactive"),
+        accent: withOpacity("--color-accent"),
+        textPrimary: withOpacity("--color-text-primary"),
+        textSecondary: withOpacity("--color-text-secondary")
       },
       fontFamily: {
         sans: ["Inter", "Segoe UI", "system-ui", "sans-serif"]
@@ -23,6 +32,24 @@ const config = {
   daisyui: {
     themes: [
       {
+        daylight: {
+          primary: "#146D3C",
+          "primary-content": "#F6FFF9",
+          secondary: "#E7F3EE",
+          "secondary-content": "#0B0D10",
+          accent: "#17B358",
+          neutral: "#F3F5F7",
+          "neutral-content": "#121315",
+          "base-100": "#F5F7F9",
+          "base-200": "#E8EEF3",
+          "base-300": "#D7E0E8",
+          info: "#1D7DD8",
+          success: "#17B358",
+          warning: "#E8A21B",
+          error: "#C64747"
+        }
+      },
+      {
         daynight: {
           primary: "#17B358",
           "primary-content": "#03190C",
@@ -30,6 +57,7 @@ const config = {
           "secondary-content": "#F4F8F6",
           accent: "#17B358",
           neutral: "#191A1C",
+          "neutral-content": "#F6FFF9",
           "base-100": "#0B0D10",
           "base-200": "#121315",
           "base-300": "#191A1C",
@@ -40,6 +68,7 @@ const config = {
         }
       }
     ],
+    lightTheme: "daylight",
     darkTheme: "daynight"
   },
   plugins: [daisyui]
