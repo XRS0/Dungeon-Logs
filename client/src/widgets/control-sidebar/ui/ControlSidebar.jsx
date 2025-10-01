@@ -68,20 +68,8 @@ export const ControlSidebar = () => {
       </div>
 
       <footer className="rounded-2xl border border-interactive/40 bg-surface/60 p-4">
-        <p className="text-sm font-medium uppercase tracking-wide text-white/60">Активная смена</p>
-        <div className="mt-3 space-y-2">
-          <p className="text-lg font-semibold">Команда №7 – "Патч"</p>
-          <div className="flex items-center justify-between text-sm text-white/40">
-            <span>Оператор</span>
-            <span className="font-medium text-white">Иван К.</span>
-          </div>
-          <div className="flex items-center justify-between text-sm text-white/40">
-            <span>Аналитик</span>
-            <span className="font-medium text-white">Анна Р.</span>
-          </div>
-        </div>
-        <div className="mt-4 rounded-xl border border-accent/50 bg-accent/10 px-3 py-2 text-sm text-accent">
-          До завершения смены: 47 мин
+        <div className="rounded-xl border border-accent/50 bg-accent/10 px-3 py-2 text-sm text-accent">
+          Тут обязательно будет какая-то полезная информация 
         </div>
       </footer>
     </aside>
