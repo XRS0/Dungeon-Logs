@@ -26,10 +26,10 @@ services:
     depends_on:
       - rabbitmq
     environment:
-      RMQ_URL: ${LIS-RMQ_URL:-amqp://admin:password@rabbitmq:5672/}
-      RMQ_QUEUE: ${LIS-RMQ_QUEUE:-log_ingestion}
-      RMQ_CONSUMER: ${LIS-RMQ_CONSUMER:-log_ingestion_service}
-      RMQ_PREFETCH: ${LIS-RMQ_PREFETCH:-5}
+      RMQ_URL: ${LIS_RMQ_URL}
+      RMQ_QUEUE: ${LIS_RMQ_QUEUE}
+      RMQ_CONSUMER: ${LIS_RMQ_CONSUMER}
+      RMQ_PREFETCH: ${LIS_RMQ_PREFETCH}
     restart: unless-stopped
     networks:
       - terraform-logs-network
@@ -42,13 +42,44 @@ services:
     depends_on:
       - rabbitmq
     environment:
-      SPRING_RABBITMQ_HOST: ${SPRING_RABBITMQ_HOST:-rabbitmq}
-      SPRING_RABBITMQ_PORT: ${SPRING_RABBITMQ_PORT:-5672}
-      SPRING_RABBITMQ_USERNAME: ${SPRING_RABBITMQ_USERNAME:-guest}
-      SPRING_RABBITMQ_PASSWORD: ${SPRING_RABBITMQ_PASSWORD:-guest}
-      LOGS_PER_SECOND: ${LOGS_PER_SECOND:-5}
-      JSON_FILE: ${JSON_FILE:-logs/tflog.json}
-      LOG_QUEUE_NAME: ${LOG_QUEUE_NAME:-terraform_logs}
+      SPRING_RABBITMQ_HOST: ${SPRING_RABBITMQ_HOST}
+      SPRING_RABBITMQ_PORT: ${SPRING_RABBITMQ_PORT}
+      SPRING_RABBITMQ_USERNAME: ${SPRING_RABBITMQ_USERNAME}
+      SPRING_RABBITMQ_PASSWORD: ${SPRING_RABBITMQ_PASSWORD}
+      LOGS_PER_SECOND: ${LOGS_PER_SECOND}
+      JSON_FILE: ${JSON_FILE}
+      LOG_QUEUE_NAME: ${LOG_QUEUE_NAME}
+    restart: unless-stopped
+    networks:
+      - terraform-logs-network
+
+  postgres:
+    image: postgres:16
+    container_name: terraform-logs-postgres
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - terraform-logs-network
+
+  pgadmin:
+    image: dpage/pgadmin4:8
+    container_name: terraform-logs-pgadmin
+    depends_on:
+      - postgres
+    ports:
+      - "${PGADMIN_PORT}:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
     restart: unless-stopped
     networks:
       - terraform-logs-network
@@ -56,6 +87,8 @@ services:
 volumes:
   rabbitmq_data:
   rabbitmq_log:
+  postgres_data:
+  pgadmin_data:
 
 
 networks:
