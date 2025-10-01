@@ -32,24 +32,6 @@ const config = {
   daisyui: {
     themes: [
       {
-        daylight: {
-          primary: "#146D3C",
-          "primary-content": "#F6FFF9",
-          secondary: "#E7F3EE",
-          "secondary-content": "#0B0D10",
-          accent: "#17B358",
-          neutral: "#F3F5F7",
-          "neutral-content": "#121315",
-          "base-100": "#F5F7F9",
-          "base-200": "#E8EEF3",
-          "base-300": "#D7E0E8",
-          info: "#1D7DD8",
-          success: "#17B358",
-          warning: "#E8A21B",
-          error: "#C64747"
-        }
-      },
-      {
         daynight: {
           primary: "#17B358",
           "primary-content": "#03190C",
@@ -67,9 +49,7 @@ const config = {
           error: "#E35C5C"
         }
       }
-    ],
-    lightTheme: "daylight",
-    darkTheme: "daynight"
+    ]
   },
   plugins: [daisyui]
 };

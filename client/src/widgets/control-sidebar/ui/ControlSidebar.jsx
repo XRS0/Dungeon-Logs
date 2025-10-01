@@ -6,7 +6,7 @@ const navigationItems = [
   { icon: Rocket, label: "Запуски", description: "Plan/apply сеансы", to: "/launches" },
   { icon: Compass, label: "Исследователь", description: "Гант / Логи", to: "/explorer" },
   { icon: AlertTriangle, label: "Инциденты", description: "Ошибки и алерты", to: "/incidents" },
-  { icon: Settings, label: "Настройки", description: "Тема и сведения", to: "/settings" }
+  { icon: Settings, label: "Настройки", description: "Сведения", to: "/settings" }
 ];
 
 export const ControlSidebar = () => {

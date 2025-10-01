@@ -13,17 +13,6 @@
   --color-text-secondary: 164 172 183;
 }
 
-[data-theme="daylight"] {
-  color-scheme: light;
-  --color-canvas: 245 247 249;
-  --color-surface: 232 238 243;
-  --color-surface-muted: 215 224 232;
-  --color-interactive: 204 214 224;
-  --color-accent: 20 109 60;
-  --color-text-primary: 17 24 39;
-  --color-text-secondary: 71 85 105;
-}
-
 body {
   font-family: "Inter", "Segoe UI", system-ui, sans-serif;
   background-color: rgb(var(--color-canvas));
