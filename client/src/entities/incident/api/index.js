@@ -1,0 +1,1 @@
+export { getIncidents } from "./getIncidents";

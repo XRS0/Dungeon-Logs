@@ -1,19 +1,52 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "daisyui";
 
-:root {
-  color-scheme: dark;
+@plugin "daisyui/theme" {
+  name: "logs";
+  default: true;
+  prefersdark: true;
+  color-scheme: "light";
+  --color-base-100: #FFF;
+  --color-base-200: #F5F5F5;
+  --color-base-300: #E9EAEB;
+  --color-base-content: #000;
+  --color-primary: #fff;
+  --color-primary-content: #000;
+  --color-secondary: #F5F5F5;
+  --color-secondary-content: #252525;
+  --color-accent: #41C678;
+  --color-accent-content: #EBFFF3;
+  --color-neutral: #D9D6FE;
+  --color-neutral-content: #4A1FB8;
+  --color-info: #B9E6FE;
+  --color-info-content: #065986;
+  --color-success: #A6F4C5;
+  --color-success-content: #05603A;
+  --color-warning: #FEDF89;
+  --color-warning-content: #93370D;
+  --color-error: #FECDCA;
+  --color-error-content: #912018;
+  --radius-selector: 2rem;
+  --radius-field: 1rem;
+  --radius-box: 1rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.28125rem;
+  --border: 0.5px;
+  --depth: 0;
+  --noise: 0;
 }
 
-body {
-  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
-  background-color: theme("colors.canvas");
+.input {
+  outline: none;
 }
 
-::selection {
-  background: rgba(23, 179, 88, 0.35);
-  color: white;
+.input:focus-within {
+  border-color: var(--color-accent);
+}
+
+.dropdown-content a:active {
+  background-color: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  color: var(--color-accent);
 }
 
 .dashed-border {

@@ -1,3 +1,5 @@
+import { axiosInstance } from "../../axios/instance";
+
 const SAMPLE_LOGS = [
   {
     id: "evt-8675309",
@@ -37,3 +39,21 @@ export const getRecentLogs = async () => {
   await new Promise((resolve) => setTimeout(resolve, 200));
   return SAMPLE_LOGS;
 };
+
+class LogsService {
+  async getLogs(page) {
+    await new Promise(res => setTimeout(res, 200));
+    return [...SAMPLE_LOGS, ...SAMPLE_LOGS, ...SAMPLE_LOGS];
+    // return axiosInstance.get("/logs", {
+    //   params: {
+    //     page,
+    //     // limit: 10,
+    //     // search: 'john',
+    //     // sort: 'name',
+    //   }
+    // });
+  }
+}
+
+export const logsService = new LogsService();
+
