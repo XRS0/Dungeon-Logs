@@ -61,6 +61,22 @@ services:
     networks:
       - terraform-logs-network
 
+  llm-summary-service:
+    build:
+      context: ./backend/llm_summary_service
+      dockerfile: Dockerfile
+    container_name: llm-summary-service
+    depends_on:
+      - rabbitmq
+    env_file:
+      - ./backend/llm_summary_service/.env
+    command: ["--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "${LLM_SUMMARY_PORT:-8000}:8000"
+    restart: unless-stopped
+    networks:
+      - terraform-logs-network
+
   postgres:
     image: postgres:16
     container_name: terraform-logs-postgres
