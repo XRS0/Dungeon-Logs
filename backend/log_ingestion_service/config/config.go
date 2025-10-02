@@ -8,6 +8,7 @@ type Config struct {
 	RMQ  Config_RMQ
 	HTTP Config_HTTP
 	DB   Config_DB
+	ES   Config_ES
 }
 
 type Config_RMQ struct {
@@ -27,6 +28,13 @@ type Config_DB struct {
 	Password string `env:"DB_PASSWORD" env-default:"postgres"`
 	Name     string `env:"DB_NAME" env-default:"terraform_logs"`
 	SSLMode  string `env:"DB_SSLMODE" env-default:"disable"`
+}
+
+type Config_ES struct {
+	Address  string `env:"ES_ADDRESS" env-default:"http://localhost:9200"`
+	Username string `env:"ES_USERNAME"`
+	Password string `env:"ES_PASSWORD"`
+	Index    string `env:"ES_INDEX" env-default:"terraform_logs"`
 }
 
 func InitConfig() Config {

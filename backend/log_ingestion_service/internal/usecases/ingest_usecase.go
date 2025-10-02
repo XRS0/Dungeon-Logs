@@ -13,6 +13,36 @@ type LogRepository interface {
 	SaveLogs(ctx context.Context, logs []entities.TerraformLog) error
 }
 
+// CombineLogRepositories returns a LogRepository that fan-outs calls to all
+// provided repositories. Nil repositories are ignored. If no repositories are
+// supplied the function returns nil.
+func CombineLogRepositories(repos ...LogRepository) LogRepository {
+	var filtered []LogRepository
+	for _, repo := range repos {
+		if repo != nil {
+			filtered = append(filtered, repo)
+		}
+	}
+
+	if len(filtered) == 0 {
+		return nil
+	}
+
+	return multiLogRepository(filtered)
+}
+
+type multiLogRepository []LogRepository
+
+func (m multiLogRepository) SaveLogs(ctx context.Context, logs []entities.TerraformLog) error {
+	for _, repo := range m {
+		if err := repo.SaveLogs(ctx, logs); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // TerraformLogProcessingUseCase orchestrates parsing raw Terraform log streams,
 // persisting them, and producing higher-level summaries for downstream services.
 type TerraformLogProcessingUseCase struct {

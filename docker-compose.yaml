@@ -18,6 +18,21 @@ services:
     networks:
       - terraform-logs-network
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
+    container_name: terraform-logs-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "${ELASTICSEARCH_PORT:-9200}:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    restart: unless-stopped
+    networks:
+      - terraform-logs-network
+
   log-ingestion-service:
     build:
       context: ./backend/log_ingestion_service
@@ -27,6 +42,7 @@ services:
       - "${LIS_HTTP_PORT}:${LIS_HTTP_PORT}"
     depends_on:
       - rabbitmq
+      - elasticsearch
     environment:
       RMQ_URL: ${LIS_RMQ_URL}
       RMQ_SUMMARY_QUEUE: ${LIS_RMQ_SUMMARY_QUEUE}
@@ -38,6 +54,10 @@ services:
       DB_PASSWORD: ${LIS_DB_PASSWORD}
       DB_NAME: ${LIS_DB_NAME}
       DB_SSLMODE: ${LIS_DB_SSLMODE}
+      ES_ADDRESS: ${LIS_ES_ADDRESS}
+      ES_USERNAME: ${LIS_ES_USERNAME}
+      ES_PASSWORD: ${LIS_ES_PASSWORD}
+      ES_INDEX: ${LIS_ES_INDEX}
     restart: unless-stopped
     networks:
       - terraform-logs-network
@@ -70,7 +90,7 @@ services:
       - rabbitmq
     env_file:
       - ./backend/llm_summary_service/.env
-    command: ["--host", "0.0.0.0", "--port", "8000"]
+    command: [ "--host", "0.0.0.0", "--port", "8000" ]
     ports:
       - "${LLM_SUMMARY_PORT:-8000}:8000"
     restart: unless-stopped
@@ -111,6 +131,7 @@ services:
 volumes:
   rabbitmq_data:
   rabbitmq_log:
+  elasticsearch_data:
   postgres_data:
   pgadmin_data:
 

@@ -11,6 +11,7 @@ import (
 
 	"log_ingestion_service/config"
 	adapter "log_ingestion_service/internal/adapters/rabbitmq"
+	esstore "log_ingestion_service/internal/infrastructure/persistance/elasticsearch"
 	pg "log_ingestion_service/internal/infrastructure/persistance/postgres"
 	infr "log_ingestion_service/internal/infrastructure/rabbitmq"
 	iface "log_ingestion_service/internal/interfaces/http"
@@ -39,6 +40,11 @@ func main() {
 	}
 	defer dbClient.Close()
 
+	esClient, err := esstore.NewClient(cfg.ES)
+	if err != nil {
+		log.Fatalf("failed to init elasticsearch client: %v", err)
+	}
+
 	queueName := cfg.RMQ.SummaryQueue
 	queue, err := client.DeclareQueue(queueName, true)
 	if err != nil {
@@ -52,7 +58,10 @@ func main() {
 	}
 
 	builder := usecases.NewTerraformSummaryBuilder()
-	repo := pg.NewLogRepository(dbClient.Pool())
+	repo := usecases.CombineLogRepositories(
+		pg.NewLogRepository(dbClient.Pool()),
+		esstore.NewLogRepository(esClient, cfg.ES.Index),
+	)
 	usecase := usecases.NewTerraformLogProcessingUseCase(repo, builder)
 	handler := iface.NewHandler(usecase, publisher, cfg.HTTP.MaxUploadBytes)
 	mux := http.NewServeMux()
