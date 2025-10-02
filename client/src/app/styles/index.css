@@ -58,3 +58,11 @@
     transparent 8px
   );
 }
+
+/* .profile-item-skeleton {
+  border-radius: 0.5rem;
+  width: 100%;
+  height: 3rem;
+  background-image: linear-gradient(105deg, #0000 0% 40%, var(--color-secondary) 50%, #0000 60% 100%);
+  animation: skeleton 1s cubic-bezier(0.18, 0.18, 0.58, 1) infinite;
+} */

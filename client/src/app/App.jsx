@@ -5,7 +5,7 @@ import { IncidentsPage } from "~pages/incidents";
 import { SettingsPage } from "~pages/settings";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import { LogsPage } from "../pages/launches/ui/LogsPage";
+import { LogsPage } from "../pages/logs/ui/LogsPage";
 
 export const App = () => {
   return (

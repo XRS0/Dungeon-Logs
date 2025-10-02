@@ -20,7 +20,7 @@ export const IncidentsPage = () => {
   const list = incidents ?? [];
 
   return (
-    <div className="flex h-full flex-col gap-8">
+    <div className="flex h-full flex-col gap-8 py-8">
       <div className="flex flex-col gap-3">
         <h2 className="text-3xl font-semibold">Инциденты</h2>
         <p className="text-white/60">

@@ -1,16 +1,10 @@
-import { Info } from "lucide-react";
 import { SectionCard } from "~shared/ui";
 
 export const SettingsPage = () => {
   return (
-    <div className="flex h-full flex-col gap-8">
-      <div className="flex flex-col gap-3">
-        <h2 className="text-3xl font-semibold">Настройки</h2>
-        <p className="text-white/60">Сведения о панели и конфигурации.</p>
-      </div>
-
-      <SectionCard icon={<Info className="h-6 w-6" />} title="О DashBoard">
-        <div className="space-y-3 text-white/70">
+    <div className="flex h-full flex-col gap-8 py-8">
+      <SectionCard title="О Dungeon Logs">
+        <div className="space-y-3 text-[#767676]">
           <p>
             Daysi Command — одностраничная панель оператора, построенная на React 18 + Vite + Tailwind/DaisyUI.
           </p>

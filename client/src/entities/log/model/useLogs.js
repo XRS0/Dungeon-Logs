@@ -1,9 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
-import { logsService } from "../api/getRecentLogs";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { logsService } from "../api/getLogs";
 
 export const useLogs = (page) => {
-  return useQuery({
-    queryKey: ["logs", { page }],
+  return useInfiniteQuery({
+    queryKey: ["logs", "infinite"],
     queryFn: () => logsService.getLogs(page),
   });
 };
