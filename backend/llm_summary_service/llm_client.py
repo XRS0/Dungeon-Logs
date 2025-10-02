@@ -1,6 +1,6 @@
 import json
 import re
-from typing import Dict, List
+from typing import List
 
 import requests
 from openai import OpenAI
@@ -107,7 +107,7 @@ class LLMClient:
             "",
         )
 
-        pattern = re.compile(r"## (?P<title>.+?)\n(?P<body>\{.*?\})(?=\n\n## |$)", re.S)
+        pattern = re.compile(r"## (?P<title>.+?)\n(?P<body>(?:\{.*?\}|\[.*?\]))(?=\n\n## |$)", re.S)
         highlights: List[str] = []
         for match in pattern.finditer(user_content):
             title = match.group("title")
@@ -128,35 +128,25 @@ class LLMClient:
             + "\n".join(highlights)
         )
 
-    def _highlight_section(self, title: str, data: Dict[str, object]) -> str:
-        if title == "Контекст запуска":
-            phase = data.get("phase")
-            terraform = data.get("terraform_version")
-            cli_args = data.get("cli_args", [])
-            return f"фаза={phase}, terraform={terraform}, args={', '.join(cli_args)}"
-        if title == "Диагностика":
-            errors = data.get("error_count", 0)
-            warns = data.get("warn_count", 0)
-            return f"ошибок={errors}, предупреждений={warns}"
-        if title == "Провайдеры":
-            version = data.get("provider_selected_version")
-            pid = data.get("provider_pid")
-            return f"версия={version or 'n/a'}, pid={pid or 'n/a'}"
-        if title == "RPC активность":
-            calls = data.get("rpc_calls_by_method", {})
-            total = sum(calls.values()) if isinstance(calls, dict) else 0
-            return f"всего вызовов={total}"
-        if title == "Backend и State":
-            backend_type = data.get("backend_type")
-            serial = data.get("state_serial")
-            return f"backend={backend_type}, serial={serial}"
-        if title == "Сигналы качества":
-            drift = data.get("provider_version_drift")
-            spikes = data.get("warn_error_spikes")
-            return ", ".join(
-                filter(None, [
-                    f"drift={drift}" if drift else None,
-                    f"spikes={spikes}" if spikes else None,
-                ])
-            ) or "без критических сигналов"
+    def _highlight_section(self, title: str, data) -> str:
+        if title == "Сводка пакета" and isinstance(data, dict):
+            duration = data.get("total_duration_seconds")
+            batch = data.get("batch_size")
+            entries = data.get("total_entries")
+            return f"батч={batch}, длительность={duration}s, записей={entries}"
+        if title == "Статистика уровней" and isinstance(data, dict):
+            if not data:
+                return "уровни не указаны"
+            top_level = max(data.items(), key=lambda item: item[1])
+            total = sum(v for v in data.values() if isinstance(v, (int, float)))
+            return f"пик={top_level[0]}({top_level[1]}), всего={total}"
+        if title == "Заметные сообщения" and isinstance(data, list):
+            error_messages = [item for item in data if isinstance(item, dict) and item.get("level") == "error"]
+            sample = error_messages[0]["message"] if error_messages else (data[0].get("message") if data and isinstance(data[0], dict) else None)
+            count = len(data)
+            detail = f"пример='{sample}'" if sample else "пример отсутствует"
+            return f"сообщений={count}, {detail}"
+        if title == "Метаданные" and isinstance(data, dict):
+            keys_sample = ", ".join(list(data.keys())[:3])
+            return f"ключи={keys_sample}" if keys_sample else "метаданные пусты"
         return ""
